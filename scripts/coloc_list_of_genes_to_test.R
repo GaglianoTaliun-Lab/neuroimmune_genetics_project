@@ -30,15 +30,17 @@ gtf_file <- gtf_file %>%
       stringr::str_remove_all(., "gene_name ") %>%
       stringr::str_remove_all(., ";") %>%
       stringr::str_remove_all(., '"')
-  )
+  ) %>%
+    select(.,
+           source, type, start, end, ensembl_id, gene_name)
 
 # Merge both dataframes ------------------------------------------------
 
-gene_table <- left_join(test_list, gtf_file, by = c("gene" = "gene_name"))
+gene_table <- left_join(test_list, gtf_file, by = c("gene" = "gene_name")) %>%
+filter(., type == "gene") %>%
+filter(., source %in% c("ensembl","ensembl_havana"))
 
 # Save new table -------------------------------------------------------
 
 write.table(gene_table, here(project_dir, "colocalization", "gene_table_coloc.txt"),
             sep = "\t", row.names = F, quote = F)
-
-
