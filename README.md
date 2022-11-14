@@ -1,2 +1,10 @@
 # neuroimmune_genetics_project
-Analysis of the relationship between neurodegenerative diseases and the immune system
+
+Manuscript title: Regional genetic correlations highlight relationships between neurodegenerative diseases and the immune system
+
+Authors: Frida Lona-Durazo, Regina H. Reynolds, Sonja W. Scholz, Mina Ryten, Sarah A. Gagliano Taliun
+
+Repository index:
+1) scripts_manuscript - all scripts used for LAVA and colocalization analyses in the present study. Additionally, we added a workflow of the steps used to run LAVA with the scripts included in PDF format.
+2) lava_results - all results performed with LAVA across traits, and with QTLs
+3) colocalization - all coloc results performed between GWAS traits and sc-eQTLs
