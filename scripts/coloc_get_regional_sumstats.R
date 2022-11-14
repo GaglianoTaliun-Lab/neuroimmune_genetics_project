@@ -19,9 +19,11 @@ mafdb <- MafDb.1Kgenomes.phase3.hs37d5
 GWAS_coloc = c("AD_schwartzentruber2021.lava.gz", "CD_delange2017.lava.gz", "ALS_vanrheenen2021.lava.gz", "MS_imsgc2019.lava.gz",
                "PD_nalls2019.lava.gz", "SCZ_pardinas2018.lava.gz", "UC_delange2017.lava.gz")
 
+mafs <- fread(here(project_dir, "reference_data", "g1000_eur", "g1000_eur.frq")) %>% dplyr::select(SNP, MAF)
+
 # Load files -----------------------------------------------------------
 
-gene_table <- read.table(here(project_dir, "colocalization", "gene_table_coloc.txt"),
+gene_table <- read.table(here(project_dir, "colocalization", "gene_table_coloc_FDR.txt"),
                         sep = "\t", header = T)
 
 lava_sumstats_files <- list.files(here(project_dir, "GWAS_summary_statistics", "LAVA_sumstats", "GWAS"), 
@@ -41,8 +43,8 @@ for (i in 1:length(lava_sumstats_files)) {
     for (j in 1:nrow(gene_table_trait)) {
       
       chr_pos = gene_table_trait$chr[j]
-      start_pos = gene_table_trait$start[j] - 100000
-      end_pos = gene_table_trait$end[j] + 100000
+      start_pos = gene_table_trait$start[j]
+      end_pos = gene_table_trait$end[j]
       
       if ("BETA" %in% names(lava_sumstats)) {
         
@@ -59,14 +61,14 @@ for (i in 1:length(lava_sumstats_files)) {
 
       } else next
       
-      mafs <- GenomicScores::gscores(x = mafdb, ranges = unique(lava_sumstats_region$SNP) %>% as.character(), pop = "EUR_AF")
-      mafs <- mafs %>%
-        as.data.frame() %>%
-        tibble::rownames_to_column(var = "SNP") %>%
-        dplyr::rename(MAF = EUR_AF) %>%
-        dplyr::select(SNP, MAF)
+#      mafs <- GenomicScores::gscores(x = mafdb, ranges = unique(lava_sumstats_region$SNP) %>% as.character(), pop = "EUR_AF")
+#      mafs <- mafs %>%
+#        as.data.frame() %>%
+#        tibble::rownames_to_column(var = "SNP") %>%
+#        dplyr::rename(MAF = EUR_AF) %>%
+#        dplyr::select(SNP, MAF)
       
-      head(mafs, 5)
+#      head(mafs, 5)
       
       lava_sumstats_region <- lava_sumstats_region %>%
         inner_join(mafs, by = "SNP")

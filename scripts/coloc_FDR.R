@@ -21,7 +21,7 @@ p12 = 1e-05
 
 # Read files -------------------------------------------------------
 
-gene_table <- read.table(here(project_dir, "colocalization", "gene_table_coloc_bonferroni.txt"),
+gene_table <- read.table(here(project_dir, "colocalization", "gene_table_coloc_FDR.txt"),
                          sep = "\t", header = T)
 
 GWAS_for_coloc <- list.files(here(project_dir, "colocalization", "GWAS_regional_sumstats"), pattern = "*.tsv", all.files = T, full.names = T)
@@ -40,7 +40,6 @@ head(case_control_N)
 coloc_results_summ <- list()
 coloc_results_res <- list()
 results_names <- array()
-# warnings_out <- list()
 
 for (i in 1:nrow(gene_table)){
   
@@ -82,7 +81,6 @@ for (i in 1:nrow(gene_table)){
     coloc_results_summ[[i]] <- coloc_results$summary
     coloc_results_res[[i]] <- coloc_results$results
     results_names[i] <- str_c(GWAS_df$GWAS[1],"_",QTL_df$eQTL_dataset[1])
-   #  warnings_out[[i]] <- warnings()    
 
     pdf(here(project_dir, "colocalization", "sensitivity_analysis", str_c(results_names[i], ".pdf")))
     sensitivity(coloc_results,rule="H4 > 0.5")
@@ -112,7 +110,6 @@ for (i in 1:nrow(gene_table)){
     coloc_results_summ[[i]] <- coloc_results$summary
     coloc_results_res[[i]] <- coloc_results$results
     results_names[i] <- str_c(GWAS_df$GWAS[1],"_",QTL_df$eQTL_dataset[1])
-   # warnings_out[[i]] <- warnings()    
 
     pdf(here(project_dir, "colocalization", "sensitivity_analysis", str_c(results_names[i], ".pdf")))
     sensitivity(coloc_results,rule="H4 > 0.5") 
@@ -128,9 +125,7 @@ for (i in 1:length(results_names)) {
   
   summ_out <- as.data.frame(coloc_results_summ[[i]]) %>% drop_na()
   res_out <- as.data.frame(coloc_results_res[[i]]) %>% drop_na()
-  # warnings_df <- as.data.frame(warnings_out[[i]]) %>% drop_na()
-  write.table(summ_out, here(project_dir, "colocalization", "coloc_results_bonferroni", "summary_all", str_c("coloc_summary_", results_names[i],".tsv")), sep = "\t", row.names = T, quote = F, col.names = F)
-  write.table(res_out, here(project_dir, "colocalization", "coloc_results_bonferroni", "results_all", str_c("coloc_results_", results_names[i],".tsv")), sep = "\t", row.names = F, quote = F)
-  # write.table(warnings_df, here(project_dir, "colocalization", "coloc_results", str_c("warnings_", results_names[i],".tsv")), sep = "\t", row.names = F, quote = F)  
+  write.table(summ_out, here(project_dir, "colocalization", "coloc_results_FDR", "summary_all", str_c("coloc_summary_", results_names[i],".tsv")), sep = "\t", row.names = T, quote = F, col.names = F)
+  write.table(res_out, here(project_dir, "colocalization", "coloc_results_FDR", "results_all", str_c("coloc_results_", results_names[i],".tsv")), sep = "\t", row.names = F, quote = F)
                             
 }
