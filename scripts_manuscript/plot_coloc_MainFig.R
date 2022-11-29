@@ -134,7 +134,7 @@ ggplot(coloc_noHLA, aes(x=order_phen1, y=chr_gene, chr)) +
   coord_fixed() +
   theme_bw() +
   scale_fill_manual(values=palette_man, name = "PP >= 0.8") +
-  labs(x = "Trait", y = "Expressed Genes", title = "") +
+  labs(x = "GWAS Trait", y = "Expressed Genes", title = "") +
   # guides(colour = guide_colourbar(title = "Cell type")) +
   theme(axis.text.x = element_text(size = 18, angle = 90, hjust = 0.95, vjust = 0.5),
         axis.text.y = element_text(size = 18),

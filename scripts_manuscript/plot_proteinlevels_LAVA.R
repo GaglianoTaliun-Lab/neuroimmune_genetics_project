@@ -183,7 +183,7 @@ ggplot(bivar_to_plot2, aes(x=order_phen1, y=chr_gene)) +
   scale_colour_distiller(
     palette = "RdYlBu",
     limits = c(-1, 1), breaks = c(-1,0,1), na.value = "grey") +
-  labs(x = "Trait", y = "Protein gene symbol", title = "") +
+  labs(x = "GWAS Trait", y = "Protein gene symbol", title = "") +
   guides(colour = guide_colourbar(title = "Local rg")) +
   theme(axis.text.x = element_text(size = 16, angle = 90, hjust = 0.5, vjust = 0.5),
         axis.text.y = element_text(size = 16),
