@@ -171,7 +171,7 @@ ggsave(here(project_dir, "lava_plots", "lava_QTLs", "onek1k", stringr::str_c("su
        width = 30, height = 30, units = "cm")
 # ----------------------------------------------------------------------------------------------------
 
-### plot: significant correlations for a specific gene across cell types
+### plot significant correlations for a specific gene across cell types
 # plot modified for paper including BIN1, RAB7L1 and SCIMP
 
 bivar_to_plot <-
@@ -203,46 +203,94 @@ HLA <- bivar_to_plot %>%
   dplyr::filter(., chr == 6 & start >= hla_start) %>%
   dplyr::filter(., chr == 6 & stop <= hla_stop) %>%
   select(gene_locus)
-
 noHLA = setdiff(bivar_to_plot$gene_locus, HLA$gene_locus)
-
 bivar_noHLA <- bivar_to_plot %>%
   filter(., gene_locus %in% noHLA)
-
 n_celltypes <- count(bivar_noHLA, cor_pair)
-
 bivar_to_plot <- bivar_noHLA %>%
   left_join(., n_celltypes, by = "cor_pair")
 
-# plot only one/subset of genes:
-bivar_to_plot <- bivar_to_plot %>% filter(., chr == 2 | chr == 17 | chr == 1) %>% 
-  filter(., gene_name == "BIN1" | gene_name == "SCIMP" | gene_name == "RAB7L1")
+# plot only one gene:
+bivar_to_plot_BIN1 <- bivar_to_plot %>% filter(., chr == 2) %>% 
+  filter(., gene_name == "BIN1")
+bivar_to_plot_SCIMP <- bivar_to_plot %>% filter(., chr == 17) %>% 
+  filter(., gene_name == "SCIMP")
+bivar_to_plot_RAB7L1 <- bivar_to_plot %>% filter(., chr == 1) %>% 
+  filter(., gene_name == "RAB7L1")
 
-ggplot(bivar_to_plot, aes(x=phen1_clean, y=phen2_clean)) + 
+plot_BIN1 <- ggplot(bivar_to_plot_BIN1, aes(x=phen1_clean, y=phen2_clean)) + 
   geom_count(colour = "black", shape = 15, size = 12) +
   geom_count(aes(colour = fill_rho), shape = 15, size = 11) +
   coord_fixed() +
   theme_bw() +
   scale_colour_distiller(palette = "RdYlBu", limits = c(-1, 1), breaks = c(-1,0,1), na.value = "grey") +
-  labs(x = "Traits", y = "Cell types", title = "") +
+  labs(x = "", y = "Cell types", title = "") +
   guides(colour = guide_colourbar(title = "Local rg")) +
-  theme(axis.text.x = element_text(size = 16, angle = 90, hjust = 0.8, vjust = 0),
-        axis.text.y = element_text(size = 16),
-        axis.title.x = element_text(size = 24),
-        axis.title.y = element_text(size = 24),
+  theme(axis.text.x = element_text(size = 14, angle = 90, hjust = 0.8, vjust = 0),
+        axis.text.y = element_text(size = 14),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
         legend.title = element_text(size = 16),
-        legend.text = element_text(size = 20),
-        strip.text.x = element_text(size = 24),
-        strip.text.y = element_text(size = 24)) +
-  geom_text(aes(label=sig), size = 8, vjust = 0.75) +
-  geom_text(aes(label=nom_sig), size = 8, vjust = 0.1) +
-  geom_text(aes(label=not_sig), size = 5, vjust = 0.4) +
+        legend.text = element_text(size = 14),
+        strip.text.x = element_text(size = 14),
+        strip.text.y = element_text(size = 14)) +
+  geom_text(aes(label=sig), size = 4, vjust = 0.75) +
+  geom_text(aes(label=nom_sig), size = 5, vjust = 0.1) +
+  geom_text(aes(label=not_sig), size = 4, vjust = 0.4) +
   coord_flip() +
-  facet_wrap(~gene_name, scales = "free", nrow = 1)
+  facet_wrap(~gene_name)
+
+plot_SCIMP <- ggplot(bivar_to_plot_SCIMP, aes(x=phen1_clean, y=phen2_clean)) + 
+  geom_count(colour = "black", shape = 15, size = 12) +
+  geom_count(aes(colour = fill_rho), shape = 15, size = 11) +
+  coord_fixed() +
+  theme_bw() +
+  scale_colour_distiller(palette = "RdYlBu", limits = c(-1, 1), breaks = c(-1,0,1), na.value = "grey") +
+  labs(x = "", y = "Cell types", title = "") +
+  guides(colour = guide_colourbar(title = "Local rg")) +
+  theme(axis.text.x = element_text(size = 14, angle = 90, hjust = 0.8, vjust = 0),
+        axis.text.y = element_text(size = 14),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        legend.title = element_text(size = 16),
+        legend.text = element_text(size = 14),
+        strip.text.x = element_text(size = 14),
+        strip.text.y = element_text(size = 14)) +
+  geom_text(aes(label=sig), size = 4, vjust = 0.75) +
+  geom_text(aes(label=nom_sig), size = 5, vjust = 0.1) +
+  geom_text(aes(label=not_sig), size = 4, vjust = 0.4) +
+  coord_flip() +
+  facet_wrap(~gene_name)
+
+plot_RAB7L1 <- ggplot(bivar_to_plot_RAB7L1, aes(x=phen1_clean, y=phen2_clean)) + 
+  geom_count(colour = "black", shape = 15, size = 12) +
+  geom_count(aes(colour = fill_rho), shape = 15, size = 11) +
+  coord_fixed() +
+  theme_bw() +
+  scale_colour_distiller(palette = "RdYlBu", limits = c(-1, 1), breaks = c(-1,0,1), na.value = "grey") +
+  labs(x = "", y = "Cell types", title = "") +
+  guides(colour = guide_colourbar(title = "Local rg")) +
+  theme(axis.text.x = element_text(size = 14, angle = 90, hjust = 0.8, vjust = 0),
+        axis.text.y = element_text(size = 14),
+        axis.title.x = element_text(size = 16),
+        axis.title.y = element_text(size = 16),
+        legend.title = element_text(size = 16),
+        legend.text = element_text(size = 14),
+        strip.text.x = element_text(size = 14),
+        strip.text.y = element_text(size = 14)) +
+  geom_text(aes(label=sig), size = 4, vjust = 0.75) +
+  geom_text(aes(label=nom_sig), size = 5, vjust = 0.1) +
+  geom_text(aes(label=not_sig), size = 4, vjust = 0.4) +
+  coord_flip() +
+  facet_wrap(~gene_name)
+
+ggarrange(plot_BIN1, plot_SCIMP, plot_RAB7L1, 
+          labels = c("A", "B", "C"),
+          ncol = 3, nrow = 1)
 
 # Save plot --------------------------------------------------------------------------------------------
-ggsave(here(project_dir, "lava_plots", "lava_QTLs", "onek1k", stringr::str_c("ORMDL3_FDR_significant_shared_across_cell_types_onek1k",date,".jpg")),
-       width = 12, height = 10, units = "cm")
+ggsave(here(project_dir, "lava_plots", "lava_QTLs", "onek1k", stringr::str_c("Fig4-paper_FDR_significant_shared_across_cell_types_onek1k",date,".jpg")),
+       width = 40, height = 10, units = "cm")
 # ----------------------------------------------------------------------------------------------------
 
 # plot: bar plot of chromosomes stratified by disease
