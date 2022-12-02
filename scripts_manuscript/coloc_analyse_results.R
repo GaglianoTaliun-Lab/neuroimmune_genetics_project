@@ -85,7 +85,7 @@ for (i in 1:nrow(sign_coloc)) {
   
 }
 
-write.table(sign_coloc, here(project_dir, stringr::str_c("coloc_results_",res_type), "summary_H4_0.8", "summary_of_results_H4_0.8.tsv"), sep = "\t", row.names = F, quote = F)
+write.table(sign_coloc, here(project_dir, stringr::str_c("coloc_results_",res_type), "summary_H4_0.8", "summary_of_results_H4_0.8_v2.tsv"), sep = "\t", row.names = F, quote = F)
 
 # create a table of H3 significant results (H3 >= 0.8) -----------------------------------------------------------------------------
 
