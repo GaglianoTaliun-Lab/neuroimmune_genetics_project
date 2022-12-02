@@ -1,75 +1,94 @@
-# create regional files for onek1k sc-eQTLs to be used for coloc
+# Description: load and wrangle Onek1k beta summary statistics for coloc per gene/celltype/region
+
+# Load packages -----------------------------------------------------------
 
 library(here)
-library(tidyverse)
-library(stringr)
 library(data.table)
+library(stringr)
+library(dplyr)
+library(tidyr)
 library(rutils)
 library(R.utils)
+library(utils)
 library(MafDb.1Kgenomes.phase3.hs37d5)
 library(GenomicScores)
+library(biomaRt)
+library(BSgenome)
+library(SNPlocs.Hsapiens.dbSNP144.GRCh37)
+library(colochelpR)
 
-# Arguments ------------------------------------------------------------
+# Arguments ---------------------------------------------------------------
 
 project_dir = "/home/fridald4/projects/def-gsarah/fridald4/neuroimmune_genetics_project"
 
 mafdb <- MafDb.1Kgenomes.phase3.hs37d5
+dbsnp_144 <- SNPlocs.Hsapiens.dbSNP144.GRCh37
 
-# Load files -----------------------------------------------------------
+# Main ---------------------------------------------------------------
 
 gene_table <- read.table(here(project_dir, "colocalization", "gene_table_coloc_FDR.txt"),
                          sep = "\t", header = T)
 
-lava_qtl_files <- list.files(here(project_dir, "GWAS_summary_statistics", "LAVA_sumstats", "onek1k"), 
-                             pattern = ".lava.gz", full.names = T) %>% as.data.frame()
-colnames(lava_qtl_files) <- "lava_path"
+# chr	gene	trait	cell_type	start	end	ensembl_id
+# 1	RP11_108M9_4	PD	CD8ET	17115033	17316144	ENSG00000238142
+# 1	AK5	PD	CD8ET	77647736	78125651	ENSG00000154027
 
 mafs <- fread(here(project_dir, "reference_data", "g1000_eur", "g1000_eur.frq")) %>% dplyr::select(SNP, MAF)
 # colnames(mafs) <- c("CHR","SNP","A1","A2","MAF","NCHROBS")
 
-head(mafs)
-
-# Format dataframes and save regional sumstats -----------------------------------------------------------
-
-lava_qtl_files <- lava_qtl_files %>%
-  mutate(lava_filename = basename(lava_path))
-
-head(lava_qtl_files)
-
-gene_table <- gene_table %>%
-  mutate(lava_filename = stringr::str_c(gene_table$cell_type, "_onek1k_", gene_table$ensembl_id, ".lava.gz")) %>%
-  left_join(., lava_qtl_files, by = "lava_filename")
-
-nrow(gene_table)
-gene_table
-
-for (i in 1:nrow(gene_table)) {
+for (row in 1:nrow(gene_table)) {
   
-    lava_qtl_sumstats <- fread(gene_table$lava_path[i])
-      
-      chr_pos = gene_table$chr[i]
-      start_pos = gene_table$start[i]
-      end_pos = gene_table$end[i]
-      
-        lava_sumstats_region <- filter(lava_qtl_sumstats, CHR == chr_pos & BP >= start_pos & BP <= end_pos) %>%
-          mutate(eQTL_dataset = str_c(gene_table$cell_type[i], "_onek1k_", gene_table$ensembl_id[i]),
-                 gene = gene_table$ensembl_id[i]) %>%
-          dplyr::select(., eQTL_dataset, gene, SNP, CHR, BP, beta = BETA, se = SE, pvalues = P, A1, A2, N) %>%
-          colochelpR::get_varbeta(.)
+  cat("Start processing row # ", row, ".\n")
+  
+  curr_chr = gene_table[row,1]
+  curr_gene = gene_table[row,2]
+  curr_celltype = gene_table[row,4]
+  curr_start = gene_table[row,5]
+  curr_end = gene_table[row,6]
+  curr_ensemblid = gene_table[row,7]
+  
+  curr_gene2 <- str_replace_all(curr_gene, "_", "-")
+  
+  eQTL_name = str_c(curr_celltype, "_onek1k_", curr_ensemblid)
+  
+  # read a file with chosen chromosome and specific cell type (from gene_table) 
+  # onek1k columns: SNP	gene	beta	t-stat	p-value	FDR
+  
+  chr_file <- read.table(here(project_dir, "GWAS_summary_statistics", "onek1k", "OneK1K_matrix_eQTL_results", str_c(curr_celltype,"_chr",curr_chr,"_cis_eqtls_210211.tsv")), sep = "\t", header = TRUE) %>%
+    filter(., gene == curr_gene2)
+  head(chr_file)
+  
+  colnames(chr_file) <- c("SNP","gene","beta","tstat","pvalues","FDR")
+  head(chr_file)
+  
+  if (nrow(chr_file) > 0) {
     
-#      mafs <- GenomicScores::gscores(x = mafdb, ranges = unique(lava_sumstats_region$SNP) %>% as.character(), pop = "EUR_AF")
-#      mafs <- mafs %>%
-#        as.data.frame() %>%
-#        tibble::rownames_to_column(var = "SNP") %>%
-#        dplyr::rename(MAF = EUR_AF) %>%
-#        dplyr::select(SNP, MAF)
-      
-      lava_sumstats_region <- lava_sumstats_region %>%
-        inner_join(mafs, by = "SNP")
-
-      write.table(lava_sumstats_region, here(project_dir, "colocalization", "QTL_regional_sumstats",
-                                             stringr::str_c("onek1k_", gene_table$cell_type[i], "_", gene_table$gene[i], ".tsv")),
-                  sep = "\t", row.names = F, quote = F)
-
+    chr_file <- chr_file %>%
+      filter(., SNP %like% "^rs") %>%
+      colochelpR::convert_rs_to_loc(df = ., SNP_column = "SNP", dbSNP = dbsnp_144) %>%
+      separate(loc, c("CHR", "BP"), sep = ":") %>%
+      filter(., BP >= curr_start & BP <= curr_end) %>%
+      mutate(gene = curr_gene, eQTL_dataset = eQTL_name, N = 982, se = beta/tstat) %>%
+      colochelpR::get_varbeta(.) %>%
+      dplyr::select(., eQTL_dataset, 
+                    gene,
+                    SNP,
+                    CHR,
+                    BP,
+                    BETA = beta,
+                    varbeta,
+                    SE = se,
+                    pvalues,
+                    N)
+  }
+  
+    coloc_out <- chr_file %>%
+      inner_join(., mafs, by = "SNP")
+    
+    out_name=here(project_dir, "colocalization", "QTL_regional_sumstats", str_c("coloc_onek1k_",curr_celltype,"_",curr_gene,".tsv"))
+    fwrite(coloc_out, file = out_name, sep = "\t")
+    
+    cat("---Finished processing row # ", row, ".\n")
+  
 }
 
