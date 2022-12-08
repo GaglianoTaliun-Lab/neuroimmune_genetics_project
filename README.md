@@ -2,6 +2,8 @@
 
 Manuscript title: Regional genetic correlations highlight relationships between neurodegenerative diseases and the immune system
 
+Preprint: https://www.medrxiv.org/content/10.1101/2022.12.07.22283179v1
+
 Authors: Frida Lona-Durazo, Regina H. Reynolds, Sonja W. Scholz, Mina Ryten, Sarah A. Gagliano Taliun
 
 Repository index:
