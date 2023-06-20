@@ -1,6 +1,6 @@
 # neuroimmune_genetics_project
 
-Manuscript title: Regional genetic correlations highlight relationships between neurodegenerative diseases and the immune system
+Manuscript title: Regional genetic correlations highlight relationships between neurodegenerative disease loci and the immune system
 
 Preprint: https://www.medrxiv.org/content/10.1101/2022.12.07.22283179v1
 
